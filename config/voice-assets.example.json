@@ -1,0 +1,11 @@
+{
+  "model_path": "../data/models/voice/model.safetensors",
+  "config_path": "../data/models/voice/config.json",
+  "style_vectors_path": "../data/models/voice/style_vectors.npy",
+  "device": "cpu",
+  "license_reference": "Replace with your voice model's license reference",
+  "approved": false,
+  "bert_paths": {
+    "EN": "../data/models/bert/deberta-v3-large"
+  }
+}

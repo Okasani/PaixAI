@@ -36,7 +36,9 @@ class Live2DStageServer:
     """Loopback-only, read-only WebSocket stream for the desktop stage."""
 
     def __init__(self, *, host: str = "127.0.0.1", port: int = 8765) -> None:
-        self.host = host
+        from app.core.config import Settings
+
+        self.host = Settings.stage_host_must_be_loopback(host)
         self.port = port
         self._server: Any | None = None
         self._clients: set[Any] = set()

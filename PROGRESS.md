@@ -1,20 +1,26 @@
 # Paix implementation progress
 
-## v0.4 — Unity VTuber, local anime voice, editable RAG, and diagnostics
+## v0.4 — Implementation available; live release gates pending
 
-- Planned: migrate the licensed VTuber model from the Electron/Pixi stage to a Unity application using the
-  official Cubism SDK for Unity while preserving the existing avatar event contract.
-- Planned: replace ElevenLabs as the default speech path with a local open-source anime-style TTS adapter; retain
-  no automatic cloud fallback.
-- Planned: move owner-editable persona, runtime, voice/avatar profile, and curated knowledge sources to documented,
-  schema-validated JSON.
-- Planned: build a fully local RAG ingestion and retrieval pipeline with rebuildable derived indexes, source
-  provenance, and untrusted-context boundaries.
-- Planned: add one-command health checks, redacted JSONL turn traces, inspect/rebuild/export tools, and a Unity
-  diagnostics overlay.
-- Status: roadmap defined; implementation has not started.
+- Implemented: JSON persona, runtime, voice and avatar profiles, generated JSON Schemas, input-free validation errors,
+  environment/CLI precedence, and canonical GitHub repository instructions.
+- Implemented: deterministic CPU-only sparse TF-IDF retrieval with explicit text/Markdown ingestion, JSON sources,
+  provenance, atomic rebuilds, stale-index detection, query/inspect/export/backup commands, and escaped untrusted context.
+- Implemented: TTS adapter registry with a local Style-Bert-VITS2 default, explicit legacy ElevenLabs selection,
+  deterministic mock audio, bounded PCM responses, phrase streaming, and cancellation without cloud fallback.
+- Implemented: a separate optional local voice bridge with offline model loading, suppressed third-party output,
+  loopback JSON requests, and an inference worker that is terminated when a request is cancelled.
+- Implemented: Unity project sources, strict event parsing, bounded reconnect queue, state/animation controller,
+  Cubism driver, stage creation/build menu, and diagnostics overlay. Original Electron stage remains available.
+- Implemented: opt-in content-free rotating JSONL traces, safe export, health checks, mock spoken-turn smoke test,
+  GitHub Actions checks, and a Codespaces backend configuration.
+- Verified locally: backend mock tests and standalone C# protocol/controller tests. See docs/v0.4.md for commands.
+- Pending release gates: compile/build the Unity application with the licensed Cubism SDK/model; verify expressions,
+  motions and actual playback lip-sync; supply an approved voice and local language resources; benchmark a real spoken
+  turn and concurrent VRAM use on the 8 GB target GPU. No live voice quality or latency claim is made yet.
+- Status: v0.4 is not release-complete until these live gates pass. No release tag is created.
 
-## v0.3 — Live2D VTuber presence
+## v0.3 â€” Live2D VTuber presence
 
 - Complete: optional sandboxed Electron/Pixi Live2D Cubism 4 renderer with no dependency impact on the minimal
   typed or voice installation.
@@ -27,7 +33,7 @@
   context isolation, disabled Node integration, and no private text/audio on the stage stream.
 - External asset requirement: the user supplies a licensed Cubism 4 model and Cubism Core runtime.
 
-## v0.2 — Fully local LLM brain
+## v0.2 â€” Fully local LLM brain
 
 - Complete: Qwen3.5 4B Q4_K_M selected for the 8 GB RTX 3060 Ti and managed through the installed LM Studio runtime.
 - Complete: loopback-only `local` provider adapter with streaming, usage, model health, cancellation, and no hidden-reasoning output.
@@ -39,7 +45,7 @@
 - Remaining v0.2 voice work: true barge-in during playback, echo control, persistent device selection, and partial
   transcription. Local TTS is promoted to the v0.4 milestone.
 
-## v0.1 — Voice-first AI companion
+## v0.1 â€” Voice-first AI companion
 
 ### Foundation
 
@@ -75,8 +81,7 @@
 
 - v0.2 continuation: immediate barge-in during playback, echo control, persistent device configuration, and
   partial transcription.
-- v0.4: Unity renderer migration, local open-source anime-style TTS, editable JSON configuration and knowledge,
-  local RAG, and structured diagnostics.
+- v0.4 release verification: licensed Unity build, local voice setup, and end-to-end hardware acceptance.
 - Later: vision, autonomous activity, stream-chat integrations, game agents, and singing.
 
 ## Verification

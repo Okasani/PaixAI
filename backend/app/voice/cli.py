@@ -104,7 +104,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Voice-first local Paix runtime")
     parser.add_argument("--provider", help="LLM provider ID; defaults to the configured provider")
     parser.add_argument("--model", help="Provider model ID")
-    parser.add_argument("--voice-id", help="ElevenLabs voice ID")
+    parser.add_argument("--voice-id", help="TTS provider voice ID")
     parser.add_argument("--conversation-id", default="voice-primary", help="Persistent SQLite conversation ID")
     parser.add_argument("--input-device", help="sounddevice input device name or numeric ID")
     parser.add_argument("--output-device", help="sounddevice output device name or numeric ID")
@@ -112,7 +112,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--push-to-talk", action="store_true", help="Require Enter to start and stop recording")
     parser.add_argument("--no-tts", action="store_true", help="Use microphone input without spoken responses")
     parser.add_argument("--list-devices", action="store_true", help="List audio devices and exit")
-    parser.add_argument("--list-voices", action="store_true", help="List available ElevenLabs voices and exit")
+    parser.add_argument("--list-voices", action="store_true", help="List available TTS provider voices and exit")
     parser.add_argument("--stage", action="store_true", help="Publish sanitized avatar events to the Live2D stage")
     parser.add_argument("--stage-port", type=int, help="Override the loopback Live2D stage WebSocket port")
     return parser
@@ -125,12 +125,12 @@ def _device(value: str | None) -> str | int | None:
 
 
 async def _choose_voice(runtime: Any, requested: str | None, *, list_only: bool = False) -> str | None:
-    voice_id = requested or runtime.settings.elevenlabs_voice_id
+    voice_id = requested or runtime.settings.tts_voice_id
     if voice_id and not list_only:
         return voice_id
     if not runtime.tts.configured():
         if list_only:
-            print("ELEVENLABS_API_KEY is not configured.")
+            print("Selected TTS provider is not configured.")
         return None
     try:
         voices = await runtime.tts.list_voices()
@@ -138,17 +138,17 @@ async def _choose_voice(runtime: Any, requested: str | None, *, list_only: bool 
         status = exc.response.status_code
         if status in {401, 403}:
             print(
-                f"ElevenLabs rejected the configured credential (HTTP {status}). "
+                f"TTS provider rejected the configured credential (HTTP {status}). "
                 "Replace the key and ensure it has voice-read and text-to-speech access."
             )
         else:
-            print(f"Unable to list ElevenLabs voices: HTTP {status}")
+            print(f"Unable to list TTS provider voices: HTTP {status}")
         return None
     except Exception as exc:
-        print(f"Unable to list ElevenLabs voices: {type(exc).__name__}: {str(exc)[:300]}")
+        print(f"Unable to list TTS provider voices: {type(exc).__name__}: {str(exc)[:300]}")
         return None
     if not voices:
-        print("No ElevenLabs voices were returned.")
+        print("No TTS provider voices were returned.")
         return None
     for index, voice in enumerate(voices, start=1):
         print(f"{index:>2}. {voice.name} ({voice.voice_id})")
@@ -186,7 +186,7 @@ async def _run(args: argparse.Namespace) -> int:
     if args.list_voices:
         await _choose_voice(runtime, args.voice_id, list_only=True)
         return 0
-    voice_id = None if args.no_tts else await _choose_voice(runtime, args.voice_id)
+    voice_id = None if args.no_tts or args.typed_only else await _choose_voice(runtime, args.voice_id)
 
     player: PCMPlayer | None = None
     if not args.typed_only and not args.no_tts and voice_id:
@@ -206,7 +206,7 @@ async def _run(args: argparse.Namespace) -> int:
         except OSError as exc:
             print(f"Unable to start Live2D stage stream: {type(exc).__name__}: {str(exc)[:300]}", file=sys.stderr)
             return 2
-        sink = AvatarEventFanout(terminal_sink, runtime.avatar_registry.get("live2d"), stage_server)
+        sink = AvatarEventFanout(terminal_sink, runtime.avatar_registry.get(settings.avatar_renderer), stage_server)
     session_id = f"voice-{uuid.uuid4()}"
     connection = await runtime.orchestrator.connect(sink, session_id)
     event_task = asyncio.create_task(terminal.run())

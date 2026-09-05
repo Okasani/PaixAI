@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 from typing import Any
 
@@ -10,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import Settings
 from app.core.models import Message
 from app.core.security import redact, redact_text
+from app.knowledge.store import KnowledgeStore
 from app.memory.service import MemoryService
 from app.persona.emotions import EmotionalSnapshot, EmotionalStateService
 from app.persona.loader import PersonaLoader
@@ -26,6 +28,7 @@ class PromptInspection(BaseModel):
     recent_turns: list[CanonicalMessage] = Field(default_factory=list)
     current_user_message: str
     tool_results: list[dict[str, Any]] = Field(default_factory=list)
+    knowledge: list[dict[str, Any]] = Field(default_factory=list)
     final_prompt: str
     estimated_tokens: int
 
@@ -42,6 +45,7 @@ class ContextBuilder:
         self.persona_loader = persona_loader
         self.emotions = emotions
         self.memories = memories
+        self.knowledge = KnowledgeStore(settings.rag_source_dir, settings.rag_index_path)
 
     async def build(
         self,
@@ -52,6 +56,10 @@ class ContextBuilder:
         tool_results: list[dict[str, Any]] | None = None,
     ) -> PromptInspection:
         bundle = self.persona_loader.load()
+        knowledge = []
+        if self.settings.rag_enabled:
+            hits = await asyncio.to_thread(self.knowledge.retrieve, current_user_message, self.settings.rag_limit)
+            knowledge = redact([hit.model_dump() for hit in hits])
         emotional_state = await self.emotions.current(session)
         memory_hits = await self.memories.retrieve(
             session, current_user_message, limit=self.settings.memory_retrieval_limit
@@ -100,6 +108,7 @@ class ContextBuilder:
             "recent_turns": [turn.model_dump() for turn in recent],
             "current_user_message": redact_text(current_user_message),
             "tool_results": safe_tools,
+            "untrusted_knowledge_json": safe_json(knowledge),
             "untrusted_memories_json": safe_json(safe_memories),
             "untrusted_tool_results_json": safe_json(safe_tools),
         }
@@ -122,6 +131,7 @@ class ContextBuilder:
             ],
             current_user_message=redact_text(current_user_message),
             tool_results=safe_tools,
+            knowledge=knowledge,
             final_prompt=final_prompt,
             estimated_tokens=max(1, len(final_prompt) // 4),
         )

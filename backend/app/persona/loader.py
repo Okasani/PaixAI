@@ -1,17 +1,18 @@
 from __future__ import annotations
 
+import json
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
-import yaml
 from jinja2 import Environment, StrictUndefined
-from pydantic import AliasChoices, BaseModel, Field, field_validator
+from pydantic import AliasChoices, Field, field_validator
 
 from app.core.config import Settings
+from app.core.json_config import StrictConfig, read_json
 
 
-class IdentityConfig(BaseModel):
+class IdentityConfig(StrictConfig):
     name: str = "Paix"
     age_presentation: int = 25
     identity_type: str = "AI companion"
@@ -21,7 +22,7 @@ class IdentityConfig(BaseModel):
     self_awareness: dict[str, bool] = Field(default_factory=lambda: {"knows_she_is_ai": True})
 
 
-class TraitsConfig(BaseModel):
+class TraitsConfig(StrictConfig):
     warmth: float = 0.90
     attentiveness: float = 0.95
     affection: float = 0.70
@@ -41,13 +42,13 @@ class TraitsConfig(BaseModel):
         return value
 
 
-class BehaviorConfig(BaseModel):
+class BehaviorConfig(StrictConfig):
     core_instructions: str
     adaptation: dict[str, str] = Field(default_factory=dict)
     safety: list[str] = Field(default_factory=list)
 
 
-class RelationshipConfig(BaseModel):
+class RelationshipConfig(StrictConfig):
     user_name: str = "Poom"
     description: str = Field(
         "A continuing, trusting collaboration that grows through shared work and conversation.",
@@ -57,7 +58,7 @@ class RelationshipConfig(BaseModel):
     boundaries: list[str] = Field(default_factory=list)
 
 
-class PersonaBundle(BaseModel):
+class PersonaBundle(StrictConfig):
     identity: IdentityConfig
     traits: TraitsConfig
     behavior: BehaviorConfig
@@ -72,21 +73,22 @@ class PersonaLoader:
             undefined=StrictUndefined, autoescape=False, trim_blocks=True, lstrip_blocks=True
         )
 
-    def _yaml(self, name: str) -> dict[str, Any]:
-        path = self.directory / f"{name}.yaml"
-        with path.open("r", encoding="utf-8") as handle:
-            data = yaml.safe_load(handle) or {}
-        if not isinstance(data, dict):
-            raise ValueError(f"{path.name} must contain a YAML object")
-        return data
+    def _section(self, name: str):
+        models = {
+            "identity": IdentityConfig,
+            "traits": TraitsConfig,
+            "behavior": BehaviorConfig,
+            "relationship": RelationshipConfig,
+        }
+        return read_json(self.directory / f"{name}.json", models[name]).model_dump()
 
     def load(self) -> PersonaBundle:
         template_path = self.directory / "prompt_template.jinja2"
         return PersonaBundle(
-            identity=IdentityConfig.model_validate(self._yaml("identity")),
-            traits=TraitsConfig.model_validate(self._yaml("traits")),
-            behavior=BehaviorConfig.model_validate(self._yaml("behavior")),
-            relationship=RelationshipConfig.model_validate(self._yaml("relationship")),
+            identity=IdentityConfig.model_validate(self._section("identity")),
+            traits=TraitsConfig.model_validate(self._section("traits")),
+            behavior=BehaviorConfig.model_validate(self._section("behavior")),
+            relationship=RelationshipConfig.model_validate(self._section("relationship")),
             template=template_path.read_text(encoding="utf-8"),
         )
 
@@ -102,13 +104,13 @@ class PersonaLoader:
         defaults_directory = self.directory / "defaults"
         result: dict[str, dict[str, Any]] = {}
         for section in ("identity", "traits", "behavior", "relationship"):
-            path = defaults_directory / f"{section}.yaml"
+            path = defaults_directory / f"{section}.json"
             if not path.is_file():
                 raise ValueError(f"Repository default is missing: {path.name}")
             with path.open("r", encoding="utf-8") as handle:
-                value = yaml.safe_load(handle) or {}
+                value = json.load(handle) or {}
             if not isinstance(value, dict):
-                raise ValueError(f"Repository default must be a YAML object: {path.name}")
+                raise ValueError(f"Repository default must be a JSON object: {path.name}")
             result[section] = self.validate_update(section, value)
         return result
 
@@ -127,4 +129,4 @@ class PersonaLoader:
     def safe_path(directory: Path, kind: str) -> Path:
         if kind not in {"identity", "traits", "behavior", "relationship"}:
             raise ValueError("Unsupported persona section")
-        return directory / f"{kind}.yaml"
+        return directory / f"{kind}.json"

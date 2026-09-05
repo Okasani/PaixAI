@@ -1,0 +1,36 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "renderer": {
+      "default": "unity",
+      "enum": [
+        "unity",
+        "live2d"
+      ],
+      "title": "Renderer",
+      "type": "string"
+    },
+    "motions": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Motions",
+      "type": "object"
+    },
+    "expressions": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Expressions",
+      "type": "object"
+    }
+  },
+  "title": "AvatarProfile",
+  "type": "object"
+}

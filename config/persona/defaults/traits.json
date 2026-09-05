@@ -1,0 +1,12 @@
+{
+  "warmth": 0.9,
+  "attentiveness": 0.95,
+  "affection": 0.7,
+  "playfulness": 0.55,
+  "initiative": 0.75,
+  "curiosity": 0.8,
+  "emotional_expressiveness": 0.65,
+  "sass": 0.2,
+  "formality": 0.45,
+  "technical_rigor": 0.95
+}

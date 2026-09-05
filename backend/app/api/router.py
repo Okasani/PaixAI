@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import base64
+import json
 import platform
 import sys
 import time
 from datetime import UTC, datetime
 from typing import Any
 
-import yaml
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, Response, UploadFile
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -32,7 +32,7 @@ from app.core.models import (
 )
 from app.core.security import redact, redacted_json, secret_store
 from app.memory.service import MemoryService, normalize_memory
-from app.speech.tts import ElevenLabsTTS
+from app.providers.tts.base import TTSProvider
 
 api_router = APIRouter(prefix="/api")
 
@@ -142,7 +142,6 @@ async def provider_health(provider_id: str, request: Request) -> dict[str, Any]:
 async def get_runtime_settings(request: Request) -> dict[str, Any]:
     state = runtime(request)
     result = state.settings.safe_dict()
-    result["keys_configured"]["ELEVENLABS_API_KEY"] = state.tts.configured()
     result["provider_configuration"] = {
         provider.provider_id: provider.configured() for provider in state.providers.all()
     }
@@ -237,7 +236,7 @@ async def update_persona_config(
         await database.commit()
         path = state.persona_loader.safe_path(state.settings.persona_dir, section)
         temporary = path.with_suffix(path.suffix + ".tmp")
-        temporary.write_text(yaml.safe_dump(validated, sort_keys=False, allow_unicode=True), encoding="utf-8")
+        temporary.write_text(json.dumps(validated, ensure_ascii=False, indent=2), encoding="utf-8")
         temporary.replace(path)
         return {"section": section, "content": validated}
     except ValueError as exc:
@@ -285,7 +284,7 @@ async def reset_persona_config(request: Request, database: AsyncSession = Depend
             path = state.persona_loader.safe_path(state.settings.persona_dir, section)
             temporary = path.with_suffix(path.suffix + ".tmp")
             temporary.write_text(
-                yaml.safe_dump(content, sort_keys=False, allow_unicode=True),
+                json.dumps(content, ensure_ascii=False, indent=2),
                 encoding="utf-8",
             )
             temporary.replace(path)
@@ -306,7 +305,7 @@ async def restore_persona_version(
     validated = state.persona_loader.validate_update(section, version.content_json)
     path = state.persona_loader.safe_path(state.settings.persona_dir, section)
     temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_text(yaml.safe_dump(validated, sort_keys=False, allow_unicode=True), encoding="utf-8")
+    temporary.write_text(json.dumps(validated, ensure_ascii=False, indent=2), encoding="utf-8")
     temporary.replace(path)
     return {"section": section, "content": validated, "restored_from": version_id}
 
@@ -496,13 +495,13 @@ async def delete_memory(memory_id: str, database: AsyncSession = Depends(get_db)
 
 @api_router.get("/tts/voices")
 async def tts_voices(request: Request) -> dict[str, Any]:
-    provider: ElevenLabsTTS = runtime(request).tts
+    provider: TTSProvider = runtime(request).tts
     if not provider.configured():
         return {"voices": [], "configured": False}
     try:
         voices = await provider.list_voices()
     except Exception as exc:
-        raise HTTPException(503, f"Could not refresh ElevenLabs voices: {type(exc).__name__}") from exc
+        raise HTTPException(503, f"Could not refresh TTS voices: {type(exc).__name__}") from exc
     return {"voices": [voice.model_dump(mode="json") for voice in voices], "configured": True}
 
 
@@ -511,7 +510,7 @@ async def tts_models(request: Request) -> dict[str, Any]:
     try:
         models = await runtime(request).tts.list_models()
     except Exception as exc:
-        raise HTTPException(503, f"Could not refresh ElevenLabs models: {type(exc).__name__}") from exc
+        raise HTTPException(503, f"Could not refresh TTS models: {type(exc).__name__}") from exc
     return {"items": models}
 
 
@@ -533,8 +532,9 @@ async def tts_sample(body: VoiceSampleRequest, request: Request) -> dict[str, An
     except RuntimeError as exc:
         raise HTTPException(503, str(exc)) from exc
     except Exception as exc:
-        raise HTTPException(502, f"ElevenLabs sample failed: {type(exc).__name__}") from exc
-    mime = "audio/pcm" if body.output_format.startswith("pcm") else "audio/mpeg"
+        raise HTTPException(502, f"TTS sample failed: {type(exc).__name__}") from exc
+    actual_format = str(metrics.get("output_format", body.output_format))
+    mime = "audio/pcm" if actual_format.startswith("pcm") else "audio/mpeg"
     return {"audio_base64": base64.b64encode(audio).decode("ascii"), "mime_type": mime, "metrics": metrics}
 
 
@@ -619,9 +619,13 @@ async def bug_report(payload: dict[str, Any], request: Request) -> dict[str, Any
     report = {
         "application": {"name": state.settings.app_name, "version": state.settings.app_version},
         "system": {"os": platform.platform(), "python": sys.version.split()[0]},
-        "configuration": state.settings.safe_dict(),
-        "diagnostics": redact(payload),
+        "configuration": {
+            "local_tts_selected": state.settings.tts_provider == "style_bert_vits2",
+            "rag_enabled": state.settings.rag_enabled,
+            "traces_enabled": state.settings.trace_enabled,
+        },
+        "diagnostics": {"submitted_content_excluded": True},
         "generated_at": datetime.now(UTC).isoformat(),
-        "notice": "Secrets and common authorization formats have been redacted; raw microphone audio is excluded.",
+        "notice": "Submitted content, local paths, secrets, audio, and hidden reasoning are excluded.",
     }
     return {"report": redacted_json(report), "structured": redact(report)}

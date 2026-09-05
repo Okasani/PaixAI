@@ -7,7 +7,8 @@ from pathlib import Path
 TEST_DATABASE = Path(tempfile.gettempdir()) / f"paix-pytest-{os.getpid()}.db"
 os.environ["PAIX_DATABASE_URL"] = f"sqlite+aiosqlite:///{TEST_DATABASE.as_posix()}"
 os.environ["PAIX_LOG_LEVEL"] = "WARNING"
-os.environ["RUN_LIVE_API_TESTS"] = "0"
+os.environ.setdefault("RUN_LIVE_API_TESTS", "0")
+os.environ["PAIX_TTS_PROVIDER"] = "mock"
 
 
 def pytest_sessionfinish() -> None:

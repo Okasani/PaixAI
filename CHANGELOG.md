@@ -5,19 +5,30 @@ All notable Project Paix changes are recorded here. Earlier implementation histo
 
 ## [0.4.0] - Unreleased
 
-### Planned
+### Added
 
-- Migrate the licensed VTuber model from Electron/Pixi to Unity through the Cubism SDK for Unity while preserving
-  Paix's renderer-neutral, loopback-only avatar event contract.
-- Replace ElevenLabs as the future default with a fully local open-source anime-style TTS adapter and no silent
-  cloud fallback.
-- Make owner-editable persona, runtime, avatar/voice profile, and curated knowledge sources documented,
-  schema-validated JSON rather than requiring code or database edits.
-- Add a local RAG pipeline with explicit ingestion, rebuild, inspection, provenance, and untrusted-context
-  boundaries.
-- Add one-command subsystem health checks, safe JSONL turn traces, deterministic smoke tests, and a Unity debug
-  overlay while continuing to exclude secrets, raw microphone audio, hidden reasoning, and private content from
-  diagnostic bundles.
+- Unity stage sources and Cubism integration with strict avatar protocol validation, stale-sequence rejection,
+  interruption hold, procedural idle movement, mouth closure, diagnostics overlay, and editor setup/build commands.
+- Local Style-Bert-VITS2 TTS adapter and optional isolated bridge, with phrase-level PCM, bounded responses,
+  cancellation, approved local assets, and no automatic cloud fallback.
+- Documented JSON source files and generated schemas for runtime, persona, voice, avatar, and knowledge.
+- CPU-only local sparse TF-IDF retrieval, source offsets/hashes, deterministic atomic rebuilds, stale-index detection,
+  explicit document import, inspect/query/export/backup commands, and prompt injection boundaries.
+- Content-free trace recording/export, health diagnostics, and an isolated mock spoken-turn smoke test.
+- GitHub Actions validation and a minimal Codespaces backend environment.
+
+### Changed
+
+- Local TTS is the default; ElevenLabs must be selected explicitly as a legacy provider.
+- Persona sources and API edits use JSON. SQLite conversation and memory storage remains intact.
+- Canonical development repository is https://github.com/Okasani/PaixAI.
+- Optional STT tests inject a mock instead of depending on a speech installation.
+- Bug report export excludes arbitrary submitted content and local paths.
+
+### Release gates
+
+Unity compilation/rendering with licensed assets and actual local voice quality, latency, cancellation, and 8 GB GPU
+coexistence still require live validation. Electron remains a migration fallback. This is an unreleased implementation.
 
 ## [0.3.0] - 2026-09-05
 

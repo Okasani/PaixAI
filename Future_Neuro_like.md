@@ -10,7 +10,7 @@ The WebUI is discarded. There will be no browser chat page or developer Control 
 
 An avatar is also intentionally excluded from v0.1. A Live2D model cannot make the project feel alive if listening, thinking, speaking, memory, and interruption are not reliable first.
 
-## v0.1 — Voice-first AI Companion
+## v0.1 â€” Voice-first AI Companion
 
 The goal of v0.1 is to talk naturally with Paix through a microphone and hear her spoken response without opening a browser.
 
@@ -72,7 +72,7 @@ multiple users, cross-device shared state, or substantial concurrent writes.
 - All realtime events include `session_id`, `turn_id`, `sequence`, and an ISO-8601 UTC timestamp.
 - Automated tests use only mock providers; live API calls remain explicitly opt-in.
 
-## v0.2 — Fully Local LLM Brain
+## v0.2 â€” Fully Local LLM Brain
 
 v0.2 replaces the cloud LLM in Paix's normal runtime with a local model. The selected starting model is
 Qwen3.5 4B Q4_K_M, hosted by LM Studio on `127.0.0.1`. The stable model identifier is `paix-local`, so the
@@ -102,7 +102,7 @@ will remove that final online dependency.
 
 Local TTS is now a primary v0.4 migration rather than an optional v0.2 follow-up.
 
-## v0.3 — Live2D VTuber Presence — Implemented
+## v0.3 â€” Live2D VTuber Presence â€” Implemented
 
 - Add the Live2D renderer only after the voice loop is reliable.
 - Create an avatar adapter and registry boundary so rendering remains independent of conversation and provider code.
@@ -123,7 +123,10 @@ Local TTS is now a primary v0.4 migration rather than an optional v0.2 follow-up
   idle movement.
 - Cubism Core and character assets remain user-supplied so their separate licenses are respected.
 
-## v0.4 — Unity VTuber, Local Anime Voice, and Editable RAG — Planned
+## v0.4 â€” Unity VTuber, Local Anime Voice, and Editable RAG â€” Planned
+
+Implementation status and remaining live release gates are tracked in `PROGRESS.md` and `docs/v0.4.md`.
+The following describes the target acceptance scope.
 
 The v0.4 goal is a fully local character runtime that is easier for the owner to customize and diagnose. Unity
 becomes the presentation layer, an open-source anime-style TTS provider becomes the normal speech path, and

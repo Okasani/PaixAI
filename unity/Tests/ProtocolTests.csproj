@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><EnableDefaultCompileItems>false</EnableDefaultCompileItems></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <Compile Include="../Assets/Paix/AvatarProtocol.cs" />
+    <Compile Include="../Assets/Paix/AvatarController.cs" />
+    <Compile Include="ProtocolTests.cs" />
+  </ItemGroup>
+</Project>

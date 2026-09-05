@@ -49,7 +49,7 @@ class LMStudioProvider:
         return bool(self.settings.local_model and self.base_url)
 
     def _client(self, timeout: httpx.Timeout | float) -> httpx.AsyncClient:
-        return httpx.AsyncClient(timeout=timeout, transport=self.transport)
+        return httpx.AsyncClient(timeout=timeout, transport=self.transport, trust_env=False, follow_redirects=False)
 
     async def list_models(self) -> list[ModelInfo]:
         async with self._client(10) as client:

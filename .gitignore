@@ -43,3 +43,22 @@ work/
 Thumbs.db
 .idea/
 .vscode/*.log
+
+# v0.4 generated/private state
+data/rag/
+data/diagnostics/
+config/voice-assets.json
+unity/Library/
+unity/Temp/
+unity/Obj/
+unity/Logs/
+unity/UserSettings/
+unity/Builds/
+unity/Assets/Live2D/
+unity/Assets/Models/
+unity/Assets/StreamingAssets/avatar.json
+
+.venv-tts/
+unity/Tests/bin/
+unity/Tests/obj/
+unity/Assets/Scenes/

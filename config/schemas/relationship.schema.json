@@ -1,0 +1,29 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "user_name": {
+      "default": "Poom",
+      "title": "User Name",
+      "type": "string"
+    },
+    "description": {
+      "default": "A continuing, trusting collaboration that grows through shared work and conversation.",
+      "title": "Description",
+      "type": "string"
+    },
+    "preferences": {
+      "additionalProperties": true,
+      "title": "Preferences",
+      "type": "object"
+    },
+    "boundaries": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Boundaries",
+      "type": "array"
+    }
+  },
+  "title": "RelationshipConfig",
+  "type": "object"
+}

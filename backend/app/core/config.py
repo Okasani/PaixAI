@@ -18,10 +18,57 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
         case_sensitive=False,
+        populate_by_name=True,
     )
 
+    @classmethod
+    def settings_customise_sources(
+        cls, settings_cls, init_settings, env_settings, dotenv_settings, file_secret_settings
+    ):
+        from app.core.json_config import runtime_values
+
+        def canonical(source):
+            def values():
+                raw = source()
+                result = dict(raw)
+                for name, field in cls.model_fields.items():
+                    alias = field.validation_alias
+                    aliases = alias.choices if isinstance(alias, AliasChoices) else [alias] if alias else []
+                    for key in aliases:
+                        if key in raw:
+                            result[name] = raw[key]
+                            break
+                    for key in aliases:
+                        result.pop(key, None)
+                return result
+
+            return values
+
+        return (
+            canonical(init_settings),
+            canonical(env_settings),
+            canonical(dotenv_settings),
+            lambda: runtime_values(PROJECT_ROOT),
+            canonical(file_secret_settings),
+        )
+
+    tts_provider: str = Field("style_bert_vits2", validation_alias="PAIX_TTS_PROVIDER")
+    local_tts_base_url: str = "http://127.0.0.1:5000"
+    local_tts_model_id: int = 0
+    local_tts_voice_id: str = "0"
+    local_tts_language: str = "EN"
+    local_tts_style: str = "Neutral"
+    local_tts_assets_approved: bool = False
+    avatar_renderer: str = "unity"
+    rag_enabled: bool = True
+    rag_limit: int = 4
+    rag_source_dir: Path = PROJECT_ROOT / "config" / "knowledge"
+    rag_index_path: Path = PROJECT_ROOT / "data" / "rag" / "index.json"
+    trace_enabled: bool = Field(False, validation_alias="PAIX_TRACE_ENABLED")
+    trace_path: Path = PROJECT_ROOT / "data" / "diagnostics" / "turns.jsonl"
+
     app_name: str = "Paix"
-    app_version: str = "0.3.0"
+    app_version: str = "0.4.0"
     environment: Literal["development", "test", "production"] = "development"
     host: str = Field("127.0.0.1", validation_alias=AliasChoices("PAIX_HOST", "SYLPHIETTE_HOST", "HOST"))
     port: int = Field(8000, validation_alias=AliasChoices("PAIX_PORT", "SYLPHIETTE_PORT", "PORT"))
@@ -143,7 +190,7 @@ class Settings(BaseSettings):
             return [item.strip() for item in value.split(",") if item.strip()]
         return value
 
-    @field_validator("local_base_url", mode="after")
+    @field_validator("local_base_url", "local_tts_base_url", mode="after")
     @classmethod
     def local_model_endpoint_must_be_loopback(cls, value: str) -> str:
         parsed = urlsplit(value)
@@ -184,6 +231,14 @@ class Settings(BaseSettings):
         if value is not None and not value.is_absolute():
             return PROJECT_ROOT / value
         return value
+
+    @property
+    def tts_voice_id(self) -> str:
+        return (self.elevenlabs_voice_id or "") if self.tts_provider == "elevenlabs" else self.local_tts_voice_id
+
+    @property
+    def tts_model_id(self) -> str:
+        return self.elevenlabs_model_id if self.tts_provider == "elevenlabs" else str(self.local_tts_model_id)
 
     def safe_dict(self) -> dict[str, object]:
         data = self.model_dump(

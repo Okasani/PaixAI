@@ -12,6 +12,7 @@ from app.core.config import Settings
 from app.core.db import AsyncSessionLocal
 from app.core.models import Conversation, LatencyEvent, Message, ProviderUsage
 from app.core.security import redact
+from app.diagnostics.trace import TraceWriter
 from app.events.schemas import RealtimeEvent
 from app.memory.service import MemoryService
 from app.persona.context_builder import ContextBuilder
@@ -23,9 +24,9 @@ from app.providers.llm.base import (
     CanonicalToolDefinition,
 )
 from app.providers.llm.registry import ProviderRegistry
+from app.providers.tts.base import TTSProvider
 from app.speech.phrase_chunker import PhraseChunker, PhraseChunkerConfig
 from app.speech.stt import FasterWhisperSTT, SileroVADSession
-from app.speech.tts import ElevenLabsTTS
 from app.tools.registry import ToolRegistry
 
 
@@ -45,6 +46,7 @@ class ActiveTurn:
 class ConnectionSession:
     session_id: str
     websocket: RealtimeEventSink
+    trace: TraceWriter | None = None
     sequence: int = 0
     send_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
     state_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
@@ -64,6 +66,8 @@ class ConnectionSession:
                 timestamp=datetime.now(UTC),
                 payload=redact(payload or {}),
             )
+            if self.trace:
+                self.trace.write(event.wire())
             await self.websocket.send_json(event.wire())
 
 
@@ -76,7 +80,7 @@ class RealtimeOrchestrator:
         context_builder: ContextBuilder,
         emotions: EmotionalStateService,
         memories: MemoryService,
-        tts: ElevenLabsTTS,
+        tts: TTSProvider,
         stt: FasterWhisperSTT,
         tools: ToolRegistry,
     ) -> None:
@@ -91,7 +95,11 @@ class RealtimeOrchestrator:
         self.connections: dict[int, ConnectionSession] = {}
 
     async def connect(self, websocket: RealtimeEventSink, session_id: str) -> ConnectionSession:
-        connection = ConnectionSession(session_id=session_id, websocket=websocket)
+        connection = ConnectionSession(
+            session_id=session_id,
+            websocket=websocket,
+            trace=TraceWriter(self.settings.trace_path) if self.settings.trace_enabled else None,
+        )
         self.connections[id(websocket)] = connection
         await connection.send(
             "session.ready",
@@ -190,6 +198,15 @@ class RealtimeOrchestrator:
             )
             await database.commit()
 
+    @staticmethod
+    async def _queue_phrase(queue, phrase, worker):
+        pending = asyncio.create_task(queue.put(phrase))
+        try:
+            await asyncio.wait({pending, worker}, return_when=asyncio.FIRST_COMPLETED)
+        finally:
+            pending.cancel()
+            await asyncio.gather(pending, return_exceptions=True)
+
     async def _tts_worker(
         self,
         connection: ConnectionSession,
@@ -227,7 +244,12 @@ class RealtimeOrchestrator:
                     elapsed = (time.perf_counter() - llm_started) * 1000
                     await connection.send("turn.state", turn.turn_id, {"state": "speaking"})
                     await self._emit_metric(
-                        connection, turn, conversation_id, "time_to_first_audio", elapsed, {"provider": "elevenlabs"}
+                        connection,
+                        turn,
+                        conversation_id,
+                        "time_to_first_audio",
+                        elapsed,
+                        {"provider": self.tts.provider_id},
                     )
                 await connection.send(
                     "tts.audio",
@@ -327,7 +349,7 @@ class RealtimeOrchestrator:
             await self._emit_metric(connection, turn, conversation_id, "context_assembly", context_ms)
 
             voice_enabled = bool(payload.get("voice_enabled", False))
-            voice_id = str(payload.get("voice_id") or self.settings.elevenlabs_voice_id or "")
+            voice_id = str(payload.get("voice_id") or self.settings.tts_voice_id)
             if voice_enabled and voice_id and self.tts.configured():
                 voice_settings = (
                     payload.get("voice_settings") if isinstance(payload.get("voice_settings"), dict) else {}
@@ -338,7 +360,7 @@ class RealtimeOrchestrator:
                         turn,
                         phrase_queue,
                         voice_id,
-                        str(payload.get("voice_model") or self.settings.elevenlabs_model_id),
+                        str(payload.get("voice_model") or self.settings.tts_model_id),
                         str(payload.get("output_format") or self.settings.elevenlabs_output_format),
                         voice_settings,
                         llm_started,
@@ -349,7 +371,7 @@ class RealtimeOrchestrator:
                 await connection.send(
                     "tts.skipped",
                     turn.turn_id,
-                    {"reason": "Select a voice and configure ELEVENLABS_API_KEY to enable speech"},
+                    {"reason": "Configure the selected TTS provider and voice to enable speech"},
                 )
 
             definitions = [
@@ -388,19 +410,19 @@ class RealtimeOrchestrator:
                             (time.perf_counter() - llm_started) * 1000,
                             {"provider": provider_id, "model": model_id},
                         )
-                    if tts_task:
+                    if tts_task and not tts_task.done():
                         for phrase in chunker.feed(delta):
-                            await phrase_queue.put(phrase)
+                            await self._queue_phrase(phrase_queue, phrase, tts_task)
                 elif provider_event.type == "usage.updated":
                     usage.update(event_payload)
                 elif provider_event.type == "response.completed":
                     completed = True
                 await connection.send(provider_event.type, turn.turn_id, event_payload)
 
-            if tts_task:
+            if tts_task and not tts_task.done():
                 for phrase in chunker.flush():
-                    await phrase_queue.put(phrase)
-                await phrase_queue.put(None)
+                    await self._queue_phrase(phrase_queue, phrase, tts_task)
+                await self._queue_phrase(phrase_queue, None, tts_task)
                 await tts_task
 
             if not self._is_current(connection, turn):
@@ -452,6 +474,9 @@ class RealtimeOrchestrator:
                 )
                 await connection.send("turn.state", turn.turn_id, {"state": "error"})
         finally:
+            if tts_task and not tts_task.done():
+                tts_task.cancel()
+                await asyncio.gather(tts_task, return_exceptions=True)
             async with connection.state_lock:
                 if connection.active is turn:
                     connection.active = None

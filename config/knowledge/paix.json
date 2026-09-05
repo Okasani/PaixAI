@@ -1,0 +1,1 @@
+{"schema_version":1,"id":"paix","title":"Paix project","content":"Paix is a local-first AI companion. Its character stage receives derived avatar commands through a loopback connection. Owner-editable knowledge is stored in JSON and its index can be rebuilt.","source":"Paix project documentation"}

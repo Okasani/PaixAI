@@ -33,5 +33,12 @@ class RealtimeEvent(BaseModel):
     timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
     payload: dict[str, Any] = Field(default_factory=dict)
 
+    @field_validator("timestamp")
+    @classmethod
+    def require_utc(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() != UTC.utcoffset(value):
+            raise ValueError("timestamp must use UTC")
+        return value
+
     def wire(self) -> dict[str, Any]:
         return self.model_dump(mode="json")

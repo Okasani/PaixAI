@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "default_provider": "local",
+  "local_model": "paix-local",
+  "local_base_url": "http://127.0.0.1:1234/v1",
+  "tts_provider": "style_bert_vits2",
+  "stage_port": 8765,
+  "trace_enabled": false,
+  "rag_enabled": true,
+  "rag_limit": 4
+}

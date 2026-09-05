@@ -1,0 +1,58 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "endpoint": {
+      "default": "http://127.0.0.1:5000",
+      "title": "Endpoint",
+      "type": "string"
+    },
+    "model_id": {
+      "const": 0,
+      "default": 0,
+      "title": "Model Id",
+      "type": "integer"
+    },
+    "speaker_id": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Speaker Id",
+      "type": "integer"
+    },
+    "language": {
+      "default": "EN",
+      "enum": [
+        "JP",
+        "EN",
+        "ZH"
+      ],
+      "title": "Language",
+      "type": "string"
+    },
+    "style": {
+      "default": "Neutral",
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Style",
+      "type": "string"
+    },
+    "license_reference": {
+      "default": "",
+      "maxLength": 1000,
+      "title": "License Reference",
+      "type": "string"
+    },
+    "assets_approved": {
+      "default": false,
+      "title": "Assets Approved",
+      "type": "boolean"
+    }
+  },
+  "title": "VoiceProfile",
+  "type": "object"
+}

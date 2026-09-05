@@ -3,6 +3,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 from app.avatar.live2d import Live2DAvatarAdapter
+from app.avatar.unity import UnityAvatarAdapter
 from app.core.config import Settings, get_settings
 from app.memory.service import MemoryService
 from app.orchestration.service import RealtimeOrchestrator
@@ -11,8 +12,8 @@ from app.persona.emotions import EmotionalStateService
 from app.persona.loader import PersonaLoader
 from app.providers.llm.registry import build_provider_registry
 from app.providers.registry import ComponentRegistry
+from app.providers.tts.registry import build_tts_registry
 from app.speech.stt import FasterWhisperSTT
-from app.speech.tts import ElevenLabsTTS
 from app.tools.registry import build_tool_registry
 
 
@@ -23,15 +24,15 @@ def build_runtime(settings: Settings | None = None) -> SimpleNamespace:
     emotions = EmotionalStateService()
     memories = MemoryService()
     context_builder = ContextBuilder(resolved, persona_loader, emotions, memories)
-    tts = ElevenLabsTTS(resolved)
+    tts_registry = build_tts_registry(resolved)
+    tts = tts_registry.get(resolved.tts_provider)
     stt = FasterWhisperSTT(resolved)
     tools = build_tool_registry()
     stt_registry: ComponentRegistry = ComponentRegistry()
     stt_registry.register(stt)
-    tts_registry: ComponentRegistry = ComponentRegistry()
-    tts_registry.register(tts)
     avatar_registry: ComponentRegistry = ComponentRegistry()
     avatar_registry.register(Live2DAvatarAdapter())
+    avatar_registry.register(UnityAvatarAdapter())
     orchestrator = RealtimeOrchestrator(
         settings=resolved,
         providers=providers,

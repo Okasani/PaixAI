@@ -1,0 +1,46 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "default": "Paix",
+      "title": "Name",
+      "type": "string"
+    },
+    "age_presentation": {
+      "default": 25,
+      "title": "Age Presentation",
+      "type": "integer"
+    },
+    "identity_type": {
+      "default": "AI companion",
+      "title": "Identity Type",
+      "type": "string"
+    },
+    "height_cm": {
+      "default": 170,
+      "title": "Height Cm",
+      "type": "integer"
+    },
+    "weight_kg": {
+      "default": 60,
+      "title": "Weight Kg",
+      "type": "integer"
+    },
+    "roles": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Roles",
+      "type": "array"
+    },
+    "self_awareness": {
+      "additionalProperties": {
+        "type": "boolean"
+      },
+      "title": "Self Awareness",
+      "type": "object"
+    }
+  },
+  "title": "IdentityConfig",
+  "type": "object"
+}
