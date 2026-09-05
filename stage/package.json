@@ -1,0 +1,29 @@
+{
+  "name": "paix-live2d-stage",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "description": "Optional desktop Live2D renderer for Project Paix",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "build": "vite build && tsc -p tsconfig.electron.json",
+    "start": "npm run build && electron .",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.electron.json"
+  },
+  "dependencies": {
+    "@pixi/unsafe-eval": "6.5.10",
+    "pixi-live2d-display": "0.4.0",
+    "pixi.js": "6.5.10"
+  },
+  "devDependencies": {
+    "@types/node": "26.4.1",
+    "electron": "44.2.0",
+    "typescript": "7.0.2",
+    "vite": "8.2.2",
+    "vitest": "5.0.0"
+  },
+  "overrides": {
+    "gh-pages": "6.3.0"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "renderer": "unity",
+  "motions": {
+    "idle": "idle",
+    "listening": "listening",
+    "thinking": "thinking",
+    "speaking": "speaking",
+    "interrupted": "interrupted",
+    "error": "error"
+  },
+  "expressions": {
+    "neutral": "neutral",
+    "warm": "warm",
+    "excited": "excited",
+    "playful": "playful",
+    "concerned": "concerned",
+    "shy": "shy"
+  }
+}

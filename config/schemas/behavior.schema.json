@@ -1,0 +1,28 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "core_instructions": {
+      "title": "Core Instructions",
+      "type": "string"
+    },
+    "adaptation": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Adaptation",
+      "type": "object"
+    },
+    "safety": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Safety",
+      "type": "array"
+    }
+  },
+  "required": [
+    "core_instructions"
+  ],
+  "title": "BehaviorConfig",
+  "type": "object"
+}

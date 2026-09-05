@@ -1,0 +1,142 @@
+:root {
+  color: #f8fafc;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  background: transparent;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#stage {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+}
+
+#stage {
+  position: relative;
+  border-radius: 22px;
+}
+
+#avatar-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.drag-region {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 48px;
+  -webkit-app-region: drag;
+}
+
+.setup-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(88%, 390px);
+  padding: 24px;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 20px;
+  background: linear-gradient(145deg, rgb(15 23 42 / 92%), rgb(30 41 59 / 82%));
+  box-shadow: 0 24px 80px rgb(0 0 0 / 35%);
+  backdrop-filter: blur(18px);
+  -webkit-app-region: no-drag;
+}
+
+.setup-card[hidden] {
+  display: none;
+}
+
+.eyebrow {
+  color: #a5b4fc;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+h1 {
+  margin: 8px 0;
+  font-size: 25px;
+}
+
+p {
+  margin: 0 0 18px;
+  color: #cbd5e1;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.setup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+button {
+  padding: 9px 12px;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 10px;
+  color: #eef2ff;
+  background: rgb(99 102 241 / 30%);
+  cursor: pointer;
+}
+
+button:hover {
+  background: rgb(99 102 241 / 48%);
+}
+
+.close-stage {
+  position: absolute;
+  z-index: 3;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 50%;
+  color: #cbd5e1;
+  background: rgb(15 23 42 / 58%);
+  font-size: 19px;
+  line-height: 28px;
+  -webkit-app-region: no-drag;
+}
+
+.status-panel {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 999px;
+  color: #dbeafe;
+  background: rgb(15 23 42 / 72%);
+  font-size: 12px;
+  text-transform: lowercase;
+  backdrop-filter: blur(12px);
+}
+
+.connection-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f59e0b;
+  box-shadow: 0 0 10px currentcolor;
+}
+
+.connection-dot.connected {
+  color: #34d399;
+  background: currentcolor;
+}

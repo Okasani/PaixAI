@@ -1,0 +1,64 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+.secrets/
+*.key
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.venv/
+backend/.venv/
+backend/.python-version
+
+# Generated dependency and build directories
+node_modules/
+dist/
+dist-electron/
+coverage/
+
+# Local Live2D SDK/model configuration
+stage/config.json
+
+# Local data, models, and generated media
+data/*.db
+data/*.db-*
+data/audio/
+data/models/
+!data/.gitkeep
+work/
+*.wav
+*.pcm
+
+# Logs and editor state
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*.log
+
+# v0.4 generated/private state
+data/rag/
+data/diagnostics/
+config/voice-assets.json
+unity/Library/
+unity/Temp/
+unity/Obj/
+unity/Logs/
+unity/UserSettings/
+unity/Builds/
+unity/Assets/Live2D/
+unity/Assets/Models/
+unity/Assets/StreamingAssets/avatar.json
+
+.venv-tts/
+unity/Tests/bin/
+unity/Tests/obj/
+unity/Assets/Scenes/

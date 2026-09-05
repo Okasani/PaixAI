@@ -1,0 +1,62 @@
+[project]
+name = "paix-backend"
+version = "0.4.0"
+description = "Local-first modular realtime AI companion backend"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+  "aiosqlite==0.21.0",
+  "anthropic==0.64.0",
+  "fastapi==0.116.1",
+  "httpx==0.28.1",
+  "jinja2==3.1.6",
+  "keyring==25.6.0",
+  "openai==1.99.9",
+  "pydantic==2.11.7",
+  "pydantic-settings==2.10.1",
+  "python-multipart==0.0.20",
+  "PyYAML==6.0.2",
+  "sqlalchemy==2.0.43",
+  "uvicorn[standard]==0.35.0",
+  "websockets==15.0.1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest==8.4.1",
+  "pytest-asyncio==1.1.0",
+  "pytest-cov==6.2.1",
+  "ruff==0.12.8",
+]
+speech = [
+  "faster-whisper==1.2.0",
+  "nvidia-cublas-cu12==12.9.2.10; sys_platform == 'win32'",
+  "nvidia-cudnn-cu12==9.25.1.1; sys_platform == 'win32'",
+  "numpy==2.2.6",
+  "requests==2.32.5",
+  "silero-vad==6.0.0",
+  "sounddevice==0.5.2",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-markers"
+asyncio_mode = "auto"
+pythonpath = ["."]
+testpaths = ["tests"]
+markers = [
+  "live: contacts an external provider and requires RUN_LIVE_API_TESTS=1",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "B", "UP", "ASYNC"]
+ignore = ["B008"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
