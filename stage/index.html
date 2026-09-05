@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' paix-asset:; style-src 'self'; img-src 'self' data: blob: paix-asset:; connect-src 'self' paix-asset: ws://127.0.0.1:* ws://localhost:* ws://[::1]:*; worker-src 'self' blob:"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Paix Live2D Stage</title>
+  </head>
+  <body>
+    <main id="stage">
+      <canvas id="avatar-canvas" aria-label="Paix Live2D avatar"></canvas>
+      <div class="drag-region" aria-hidden="true"></div>
+      <button id="close-stage" class="close-stage" type="button" aria-label="Close Live2D stage">×</button>
+      <section id="setup" class="setup-card" hidden>
+        <div class="eyebrow">PROJECT PAIX · LIVE2D</div>
+        <h1>Give Paix a model</h1>
+        <p id="setup-message">Select a Cubism model and the Cubism Core runtime to begin.</p>
+        <div class="setup-actions">
+          <button id="choose-model" type="button">Choose model3.json</button>
+          <button id="choose-core" type="button">Choose Cubism Core</button>
+        </div>
+      </section>
+      <aside class="status-panel">
+        <span id="connection-dot" class="connection-dot" aria-hidden="true"></span>
+        <span id="state-label">starting</span>
+      </aside>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

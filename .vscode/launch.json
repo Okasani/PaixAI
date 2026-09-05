@@ -1,0 +1,63 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Voice: Paix (Local Qwen)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "app.voice.cli",
+      "args": ["--provider", "local"],
+      "cwd": "${workspaceFolder}/backend",
+      "python": "${workspaceFolder}/backend/.venv/Scripts/python.exe",
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "PAIX_STT_DEVICE": "cuda",
+        "PAIX_STT_COMPUTE_TYPE": "float16"
+      },
+      "console": "integratedTerminal",
+      "preLaunchTask": "Paix: Start local model",
+      "justMyCode": true
+    },
+    {
+      "name": "Voice: Paix + Live2D events",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "app.voice.cli",
+      "args": ["--provider", "local", "--stage"],
+      "cwd": "${workspaceFolder}/backend",
+      "python": "${workspaceFolder}/backend/.venv/Scripts/python.exe",
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "PAIX_STT_DEVICE": "cuda",
+        "PAIX_STT_COMPUTE_TYPE": "float16"
+      },
+      "console": "integratedTerminal",
+      "preLaunchTask": "Paix: Start local model",
+      "justMyCode": true
+    },
+    {
+      "name": "Voice: Typed mock test",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "app.voice.cli",
+      "args": ["--typed-only", "--no-tts"],
+      "cwd": "${workspaceFolder}/backend",
+      "python": "${workspaceFolder}/backend/.venv/Scripts/python.exe",
+      "envFile": "${workspaceFolder}/.env",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "Developer API: FastAPI",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": ["app.main:app", "--host", "127.0.0.1", "--port", "8000"],
+      "cwd": "${workspaceFolder}/backend",
+      "python": "${workspaceFolder}/backend/.venv/Scripts/python.exe",
+      "envFile": "${workspaceFolder}/.env",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    }
+  ]
+}

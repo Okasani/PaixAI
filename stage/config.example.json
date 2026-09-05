@@ -1,0 +1,25 @@
+{
+  "model": "C:\\Models\\Paix\\paix.model3.json",
+  "cubismCore": "C:\\Live2D_Cubism_SDK_Web\\Core\\live2dcubismcore.min.js",
+  "socketUrl": "ws://127.0.0.1:8765",
+  "alwaysOnTop": true,
+  "transparent": true,
+  "width": 520,
+  "height": 720,
+  "motionGroups": {
+    "idle": "Idle",
+    "listening": "Listening",
+    "thinking": "Thinking",
+    "speaking": "TapBody",
+    "interrupted": "FlickHead",
+    "error": "FlickHead"
+  },
+  "expressions": {
+    "neutral": "",
+    "warm": "smile",
+    "excited": "excited",
+    "playful": "playful",
+    "concerned": "concerned",
+    "shy": "shy"
+  }
+}

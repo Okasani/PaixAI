@@ -1,0 +1,11 @@
+{
+  "folders": [
+    {
+      "name": "Paix",
+      "path": "."
+    }
+  ],
+  "settings": {
+    "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv/Scripts/python.exe"
+  }
+}
